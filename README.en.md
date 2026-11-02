@@ -6,9 +6,11 @@
 
 Your [**Star ⭐ ↗**](https://github.com/Yu-tao-Li/dsh-computer-use-win) keeps me motivated to update this project. Please, it means a lot to me! Found a problem or have a wish? [**Open an Issue ↗**](https://github.com/Yu-tao-Li/dsh-computer-use-win/issues/new) — **you make the wish, I’ll work on it!**
 
-**语言 / Language:** [简体中文](#简体中文) · [English](#english) · [日本語](README.ja.md)
+**语言 / Language:** [日本語](README.md) · English · [简体中文](README.zh.md)
 
 [Releases](https://github.com/Yu-tao-Li/dsh-computer-use-win/releases) · [npm](https://www.npmjs.com/package/dsh-computer-use-win) · [Issues](https://github.com/Yu-tao-Li/dsh-computer-use-win/issues)
+
+> **About this repository.** This is a personal fork of [Yu-tao-Li/dsh-computer-use-win](https://github.com/Yu-tao-Li/dsh-computer-use-win) with Japanese localization added for Japanese Windows; the Japanese README is the main one ([README.md](README.md)). Install this fork from GitHub: `dsh plugin --profile desktop add github:kiojuvr/dsh-computer-use-win`.
 
 ---
 
