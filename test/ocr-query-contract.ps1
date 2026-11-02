@@ -7,7 +7,7 @@ $tokens = $null
 $parseErrors = $null
 $ast = [System.Management.Automation.Language.Parser]::ParseInput($source, [ref]$tokens, [ref]$parseErrors)
 if ($parseErrors.Count) { throw 'Backend source did not parse.' }
-foreach ($name in @('Get-Prop', 'Invoke-Safe', 'Get-OcrWordBounds', 'Find-OcrWordRun', 'Invoke-Action')) {
+foreach ($name in @('Get-Prop', 'Invoke-Safe', 'Convert-MatchText', 'Get-OcrWordBounds', 'Find-OcrWordRun', 'Invoke-Action')) {
   $function = $ast.Find({param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $name}, $true)
   if ($null -ne $function) { Invoke-Expression ($function.Extent.Text.Replace('System.Windows','Fixture')) }
 }

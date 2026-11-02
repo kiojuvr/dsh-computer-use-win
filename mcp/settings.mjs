@@ -1,3 +1,5 @@
+import { defaultIndicatorText } from './system-locale.mjs';
+
 export const TOOL_NAMES = Object.freeze(['health','snapshot','accessibility_tree','list_windows','find','element_info','click','double_click','move','drag','scroll','type_text','keypress','focus','invoke','set_value','activate_window','wait','ocr','screenshot','wait_for','close_window','move_window','launch_app','tools']);
 export const LITE_TOOL_NAMES = Object.freeze(['list_windows','find','click','scroll','type_text','keypress','ocr','screenshot','wait_for','launch_app','tools']);
 export function normalizeEnabledTools(value) {
@@ -14,7 +16,7 @@ export const BROWSER_APPS = Object.freeze(['default', 'edge', 'chrome', 'firefox
 
 export const DEFAULT_SETTINGS = Object.freeze({
   browserFirst: true, browserVisible: true, browserApp: 'default', browserSignIn: false,
-  mode: 'full', toolPreset: 'auto', enabledTools: TOOL_NAMES, indicatorEnabled: true, cursorIndicatorEnabled: true, remoteIndicatorVisible: true, indicatorText: 'DSH 正在控制电脑',
+  mode: 'full', toolPreset: 'auto', enabledTools: TOOL_NAMES, indicatorEnabled: true, cursorIndicatorEnabled: true, remoteIndicatorVisible: true, indicatorText: defaultIndicatorText(),
   indicatorPosition: 'top', indicatorIdleMs: 800, stopShortcut: '', communityNote: 'full',
   resumeToken: 0, previewToken: 0
 });

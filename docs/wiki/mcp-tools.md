@@ -324,7 +324,7 @@ Wait for a short period before observing the UI again.
 
 ### ocr
 
-Read visible text with Windows.Media.Ocr, independent of UIA by default. Returns text, lines and word boxes in SCREEN coordinates. query is literal text matching, not semantic recognition; inspect lines if 'search' misses a placeholder. Click matched.word.x/y using foreground dispatch, then type_text with focusMode:'preserve'. Optional resolveControl performs a potentially blocking UIA hit-test; its control may be the whole page rather than the text input.
+Read visible text with Windows.Media.Ocr, independent of UIA by default. Returns text, lines and word boxes in SCREEN coordinates. The OCR pack follows the Windows display language (Japanese on a Japanese Windows); pass `language` to read another script better, and check `language` and `availableLanguages` in the result. query is literal text matching, not semantic recognition; inspect lines if 'search' misses a placeholder. Click matched.word.x/y using foreground dispatch, then type_text with focusMode:'preserve'. Optional resolveControl performs a potentially blocking UIA hit-test; its control may be the whole page rather than the text input.
 
 | Argument | Type | Default / bounds |
 |---|---|---|
@@ -336,7 +336,8 @@ Read visible text with Windows.Media.Ocr, independent of UIA by default. Returns
 | maxWidth | integer | default: 1920; min: 0; max: 7680 |
 | resolveControl | boolean | default: false |
 | includeScreenshot | boolean | default: false |
-| query | string |  |
+| language | string | BCP 47 tag of an installed OCR pack, e.g. ja, ja-JP, en-US, zh-Hans-CN; empty = the Windows display language |
+| query | string | literal; case-insensitive, whitespace- and character-width-insensitive (NFKC) |
 
 ### screenshot
 
@@ -353,7 +354,7 @@ Capture a window or desktop without querying UIA. Returns an image plus bounds a
 
 ### wait_for
 
-Wait for a window, a UIA element, or literal visible OCR text to appear/disappear. condition:'window' uses native window enumeration; 'element' uses a bounded UIA query; 'text' uses OCR without UIA. Returns verification:'observed' only when the condition was observed; truncated UIA absence is inconclusive. Text is literal, so use the actual expected text, not an inferred semantic label.
+Wait for a window, a UIA element, or literal visible OCR text to appear/disappear. condition:'window' uses native window enumeration; 'element' uses a bounded UIA query; 'text' uses OCR without UIA, in the Windows display language unless `language` names another installed OCR pack (an English pack on a Japanese Windows reads English text the Japanese pack misreads). Returns verification:'observed' only when the condition was observed; truncated UIA absence is inconclusive. Text is literal, so use the actual expected text, not an inferred semantic label.
 
 | Argument | Type | Default / bounds |
 |---|---|---|
@@ -363,6 +364,7 @@ Wait for a window, a UIA element, or literal visible OCR text to appear/disappea
 | activate | boolean | default: false |
 | condition | string | window/element/text; default: "window" |
 | query | string |  |
+| language | string | condition "text": BCP 47 tag of an installed OCR pack, e.g. en-US; empty = the Windows display language |
 | controlType | string |  |
 | scope | string | active_window/desktop; default: "active_window" |
 | viewMode | string | control/content/raw; default: "control" |

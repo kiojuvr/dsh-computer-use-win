@@ -13,6 +13,7 @@ const root = await mkdtemp(path.join(process.env.WCU_TEST_OUTPUT || os.tmpdir(),
 if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, `artifactRoot=${root}\n`);
 const suites = [
   ['source-encoding', process.execPath, ['test/source-encoding.mjs']],
+  ['locale-ja', process.execPath, ['test/locale-ja.mjs']],
   ['tool-context', process.execPath, ['test/tool-context.mjs']],
   ['lazy-tools', process.execPath, ['test/lazy-tools.mjs']],
   ['client-settings-contract', process.execPath, ['test/client-settings-contract.mjs']],

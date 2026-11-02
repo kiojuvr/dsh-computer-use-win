@@ -510,7 +510,7 @@ const DISABLED = `function () {
   const element = this.nodeType === 1 ? this : this.parentElement;
   return Boolean(element?.closest(':disabled, [aria-disabled="true"]'));
 }`;
-const TRUE_VALUE = /^(?:true|1|on|yes|checked|是|选中|勾选)$/i, FALSE_VALUE = /^(?:false|0|off|no|unchecked|否|不选|取消|取消勾选)$/i;
+const TRUE_VALUE = /^(?:true|1|on|yes|checked|是|选中|勾选|はい|オン|チェック|有効)$/i, FALSE_VALUE = /^(?:false|0|off|no|unchecked|否|不选|取消|取消勾选|いいえ|オフ|チェックなし|無効)$/i;
 // A native drop-down draws its list in a browser popup, so its options have no
 // box in the page. A click on one chooses it, as the user's click in the list
 // would: the select changes and fires input and change. A list drawn in the
