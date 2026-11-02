@@ -80,7 +80,7 @@ window.__ModuleLoader__.load({
       return key?[event.ctrlKey&&'Ctrl',event.altKey&&'Alt',event.shiftKey&&'Shift',event.metaKey&&'Win',key].filter(Boolean).join('+'):null;
     }
     const css=`
-      [data-wincu-settings]{--wcu-card:var(--dsw-alias-settings-card-fill,var(--dsw-alias-bg-layer-2,Canvas));--wcu-card-stroke:var(--dsw-alias-settings-card-stroke,var(--dsw-alias-border-l4,rgba(128,128,128,.34)));--wcu-sunken:var(--dsw-alias-bg-module-platform,color-mix(in srgb,CanvasText 4%,Canvas));--wcu-control:var(--dsw-alias-bg-layer-1,Canvas);--wcu-fg:var(--dsw-alias-label-primary,CanvasText);--wcu-muted:var(--dsw-alias-label-secondary,#61666b);--wcu-subtle:var(--dsw-alias-label-tertiary,#81858c);--wcu-line:var(--dsw-alias-border-l2,rgba(128,128,128,.2));--wcu-line-strong:var(--dsw-alias-border-l3,rgba(128,128,128,.3));--wcu-hover:var(--dsw-alias-interactive-bg-hover,rgba(128,128,128,.1));--wcu-accent:var(--dsw-alias-state-business-primary,#4176e6);--wcu-primary:var(--dsw-alias-button-primary-fill,#0f1115);--wcu-primary-fg:var(--dsw-alias-label-primary-foreground,#fff);--wcu-selected:var(--dsw-static-neutral-bluish-400,#adb2b8);--wcu-tip-bg:var(--dsw-alias-tooltip-bg,#2b2f36);--wcu-tip-fg:#fff;color:var(--wcu-fg);font:14px/1.55 var(--dsw-font-family,-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif);max-width:720px;list-style:none;box-sizing:border-box;margin:0;padding:0 0 8px}
+      [data-wincu-settings]{--wcu-card:var(--dsw-alias-settings-card-fill,var(--dsw-alias-bg-layer-2,Canvas));--wcu-card-stroke:var(--dsw-alias-settings-card-stroke,var(--dsw-alias-border-l4,rgba(128,128,128,.34)));--wcu-sunken:var(--dsw-alias-bg-module-platform,color-mix(in srgb,CanvasText 4%,Canvas));--wcu-control:var(--dsw-alias-bg-layer-1,Canvas);--wcu-fg:var(--dsw-alias-label-primary,CanvasText);--wcu-muted:var(--dsw-alias-label-secondary,#61666b);--wcu-subtle:var(--dsw-alias-label-tertiary,#81858c);--wcu-line:var(--dsw-alias-border-l2,rgba(128,128,128,.2));--wcu-line-strong:var(--dsw-alias-border-l3,rgba(128,128,128,.3));--wcu-hover:var(--dsw-alias-interactive-bg-hover,rgba(128,128,128,.1));--wcu-accent:var(--dsw-alias-state-business-primary,#4176e6);--wcu-primary:var(--dsw-alias-button-primary-fill,#0f1115);--wcu-primary-fg:var(--dsw-alias-label-primary-foreground,#fff);--wcu-selected:var(--dsw-static-neutral-bluish-400,#adb2b8);--wcu-tip-bg:var(--dsw-alias-tooltip-bg,#2b2f36);--wcu-tip-fg:#fff;color:var(--wcu-fg);font:14px/1.55 var(--dsw-font-family,-apple-system,BlinkMacSystemFont,'Segoe UI','Yu Gothic UI','Meiryo','Microsoft YaHei','Microsoft JhengHei',sans-serif);max-width:720px;list-style:none;box-sizing:border-box;margin:0;padding:0 0 8px}
       [data-wincu-settings] *{box-sizing:border-box}
       [data-wincu-settings] h2{font-size:18px;line-height:1.4;font-weight:600;margin:0}
       [data-wincu-settings] h3{font-size:15px;line-height:22px;font-weight:600;margin:0}
@@ -519,6 +519,117 @@ window.__ModuleLoader__.load({
     const actionKeys={snapshot:'see',screenshot:'see',accessibility_tree:'read',list_windows:'windows',find:'findControl',element_info:'read',click:'clickAction',double_click:'doubleClick',move:'movePointer',drag:'dragAction',scroll:'scrollAction',type_text:'typeAction',keypress:'keyAction',focus:'focusAction',invoke:'invokeAction',set_value:'valueAction',activate_window:'windowAction',wait:'waitAction',ocr:'ocrAction',wait_for:'verifyAction',close_window:'closeAction',move_window:'moveWindowAction',launch_app:'launchAction',health:'healthAction',tools:'toolsAction'};
     Object.assign(dictionaries.zh,{see:'查看了屏幕',read:'读取了界面控件',windows:'查看了打开的窗口',findControl:'查找了界面控件',clickAction:'点击了目标位置',doubleClick:'双击了目标位置',movePointer:'移动了鼠标',dragAction:'拖动了目标',scrollAction:'滚动了页面',typeAction:'输入了文本',keyAction:'发送了按键',focusAction:'聚焦了目标控件',invokeAction:'操作了目标控件',valueAction:'填写了控件内容',windowAction:'切换了目标窗口',waitAction:'等待了界面响应',ocrAction:'识别了屏幕文字',verifyAction:'检查了操作结果',closeAction:'请求关闭窗口',moveWindowAction:'移动了窗口',launchAction:'请求启动应用',healthAction:'检查了桌面服务',toolsAction:'查看了工具配置',working:'正在操作…',completed:'已完成',failedAction:'未完成',stoppedAction:'已停止',seriesTitle:'本轮桌面操作',sentOnly:'操作已发送，效果待确认',showDetails:'查看步骤和截图',searchSubmitted:'在浏览器中提交了搜索',searchObserved:'在浏览器中搜索了',seriesCount:'步操作',stepError:'操作失败',and:'，并'});
     Object.assign(dictionaries.en,{see:'Viewed the screen',read:'Read interface controls',windows:'Listed open windows',findControl:'Looked for controls',clickAction:'Clicked the target',doubleClick:'Double-clicked the target',movePointer:'Moved the pointer',dragAction:'Dragged the target',scrollAction:'Scrolled the page',typeAction:'Entered text',keyAction:'Sent a key press',focusAction:'Focused a control',invokeAction:'Operated a control',valueAction:'Filled in a control',windowAction:'Switched windows',waitAction:'Waited for the interface',ocrAction:'Read screen text',verifyAction:'Checked the result',closeAction:'Requested window close',moveWindowAction:'Moved a window',launchAction:'Requested app launch',healthAction:'Checked desktop service',toolsAction:'Viewed tool settings',working:'Working…',completed:'Completed',failedAction:'Incomplete',stoppedAction:'Stopped',seriesTitle:'Desktop activity',sentOnly:'Input sent; effect unconfirmed',showDetails:'Steps and screenshots',searchSubmitted:'Submitted a browser search for',searchObserved:'Searched the browser for',seriesCount:'steps',stepError:'Action failed',and:', then '});
+    // Japanese. The Windows user locale decides it: a Japanese Windows starts
+    // the web UI in Japanese because navigator.languages reports ja-JP, and
+    // Settings > General offers 日本語 once addLanguage registers it below.
+    // Keys mirror en; a missing key falls back to English through the
+    // language's declared fallback chain.
+    dictionaries.ja={
+      nav:'コンピューター操作',title:'コンピューター操作（Computer Use）',intro:'DSH が Windows のデスクトップアプリと Web ページを操作します。',
+      mode:'ツールモード',lite:'簡易',full:'すべて',
+      modeHint:'簡易モードはよく使うツールだけを残し、他は必要になったときに読み込みます。モードの変更は現在の操作が終わってから反映されます。',
+      indicator:'画面の縁とバナー',indicatorHint:'操作中と短い思考の間は表示を続け、最後のデスクトップ操作から 30 秒で自動的に消えます。',
+      text:'バナーの文字',position:'バナーの位置',top:'画面上部',bottom:'画面下部',
+      delay:'操作後に表示を保持',delayHint:'一連の操作がすべて終わってから表示を消します。200～3000 ミリ秒の範囲です。',
+      corner:'マウスで操作を停止',cornerHint:'デスクトップの左上隅にマウスを約 0.5 秒置くと、以降のクリックと入力を止めます。マウスを離せば再開でき、Esc はいつでも使えます。',
+      stop:'操作を停止',stopHint:'Esc は今回の一連の操作だけを止めます。次のタスクや「続けて」の指示で、設定を変えずにまた使えます。通常のマウス移動や他のキーでは停止しません。ブラウザ操作はバックグラウンドで動き Esc を使わないため、DSH の停止ボタンで止めてください。',
+      resume:'デスクトップ操作を再開',resumed:'デスクトップ操作の再開を要求しました',
+      preview:'プレビュー',previewed:'プレビューを要求しました',
+      save:'変更を保存',discard:'変更を破棄',saved:'保存しました',failed:'保存に失敗しました',
+      unavailable:'書き込み可能な設定がありません。ローカルの DSH でこのページを開いてください。',
+      invalid:'1 行 1～120 文字のバナー文字と、200～3000 の整数の表示保持時間を入力してください。',
+      persistFailed:'設定の保存をホストが確認できませんでした。再読み込みしてお試しください。',
+      toolsTitle:'ツール',toolsHint:'読み込み方法を選びます。個別に選ぶときは「カスタム」を選択してください。',
+      liteSummary:'よく使うツールだけを読み込み、コンテキストを節約します',fullSummary:'デスクトップツールをすべて読み込みます（既定）',
+      liteCount:'起動時 11 ツール',fullCount:'起動時 25 ツール',modeAfter:'モードの変更は現在の操作が終わってから反映されます。',
+      indicatorTitle:'操作中の表示',previewHint:'画面での表示を確認する前に、変更を保存してください。',
+      previewOff:'表示はオフです',previewOn:'操作中は画面に表示されます',previewNote:'表示はフォーカスを奪わず、クリックはそのまま通ります。',
+      appearance:'その他のオプション',escTitle:'Esc で停止',extraStop:'カスタム停止ショートカット',dirty:'未保存の変更があります',clean:'変更したら保存してください',ms:'ミリ秒',
+      githubLink:'GitHub · dsh-computer-use-win ↗',
+      starRequest:'Star をいただけると更新の励みになります。ぜひお願いします！',
+      issueBefore:'お困りの点やご要望は',issueLink:'Issue でお知らせください',issueAfter:'。いただいた声はすぐに形にします！',
+      starPrefix:'',starLink:'Star',starAfter:' をいただけると更新の励みになります。ぜひお願いします！ ',
+      shortcutHint:'「ショートカットを記録」を押してから、F8 や Ctrl + Alt + K のようなキーまたは組み合わせを押します。保存すると有効になり、既定に戻すと Esc だけになります。',
+      record:'ショートカットを記録',rerecord:'再記録',cancelRecord:'記録を中止',clearShortcut:'既定に戻す（Esc）',noShortcut:'Esc（既定）',
+      listening:'ショートカットを押してください…',unsupportedKey:'英数字、ファンクションキー、または一般的なキーを、必要に応じて Ctrl、Alt、Shift、Win と組み合わせてください。',
+      recordCancelled:'記録を中止しました',recordTimedOut:'記録がタイムアウトしました。ボタンをもう一度押してください。',
+      starTitle:'GitHub でこのプロジェクトに Star を付ける（新しいウィンドウで開きます）',issueTitle:'GitHub で Issue を送る（新しいウィンドウで開きます）',
+      compactNote:'折りたたむ',fullNote:'展開',compactNoteTitle:'dsh-computer-use-win のリンクに折りたたみます（そのまま維持されます）',fullNoteTitle:'Star と Issue の説明をすべて表示します',
+      indicatorIntro:'DSH がデスクトップを使うときは、画面の縁、バナー、マウスのラベルで知らせます。',stopIntro:'進行中の一連の操作をいつでも中断できます。',
+      projectLink:'dsh-computer-use-win',projectTitle:'GitHub で dsh-computer-use-win を開く（新しいウィンドウで開きます）',
+      cursorIndicator:'マウスを強調表示',cursorIndicatorHint:'操作中はマウスの下に柔らかい光と DSH のラベルを表示し、操作位置が分かるようにします。停止または操作の終了で消えます。',
+      customTools:'ツールを個別に選択',toolsSelected:'有効',toolsUnit:'ツール',allTools:'すべて選択',noTools:'すべて無効',
+      toolAfter:'保存したツールの変更は、現在の操作が終わってから反映されます。',
+      toolGroup_observe:'画面と内容',toolGroup_input:'マウスとキーボード',toolGroup_windows:'ウィンドウとコントロール',toolGroup_other:'待機とツール管理',
+      tool_health:'接続を確認',toolHint_health:'デスクトップツールが使えるか確認します',
+      tool_snapshot:'画面とコントロール',toolHint_snapshot:'画面と UI コントロールをまとめて取得します',
+      tool_accessibility_tree:'UI コントロールを読む',toolHint_accessibility_tree:'コントロールの階層を読み取ります',
+      tool_find:'コントロールを探す',toolHint_find:'文字や種類からコントロールを探します',
+      tool_element_info:'コントロールの詳細',toolHint_element_info:'コントロールの属性と操作を読み取ります',
+      tool_ocr:'画面の文字を読む',toolHint_ocr:'画面の文字と位置を認識します',
+      tool_screenshot:'スクリーンショット',toolHint_screenshot:'ウィンドウまたはデスクトップを撮影します',
+      tool_click:'クリック',toolHint_click:'コントロールまたは画面の位置をクリックします',
+      tool_double_click:'ダブルクリック',toolHint_double_click:'コントロールまたは位置をダブルクリックします',
+      tool_move:'マウスを移動',toolHint_move:'マウスポインターを指定位置へ動かします',
+      tool_drag:'ドラッグ',toolHint_drag:'指定した経路でドラッグします',
+      tool_scroll:'スクロール',toolHint_scroll:'ページやコントロールをスクロールします',
+      tool_type_text:'文字を入力',toolHint_type_text:'現在の入力位置に文字を入力します',
+      tool_keypress:'キーを送る',toolHint_keypress:'キーまたは組み合わせキーを送ります',
+      tool_launch_app:'アプリを起動',toolHint_launch_app:'ツール終了後も残るアプリを起動します',
+      tool_list_windows:'ウィンドウ一覧',toolHint_list_windows:'開いているウィンドウを探します',
+      tool_activate_window:'ウィンドウを切り替え',toolHint_activate_window:'対象のウィンドウを前面に出します',
+      tool_move_window:'ウィンドウを移動',toolHint_move_window:'ウィンドウの位置を変えます',
+      tool_close_window:'ウィンドウを閉じる',toolHint_close_window:'アプリにウィンドウを閉じるよう要求します',
+      tool_focus:'コントロールにフォーカス',toolHint_focus:'入力フォーカスをコントロールへ移します',
+      tool_invoke:'コントロールを操作',toolHint_invoke:'ボタンや項目の実行、切り替え、選択、展開を行います',
+      tool_set_value:'値を設定',toolHint_set_value:'編集可能なコントロールに直接入力します',
+      tool_wait:'少し待つ',toolHint_wait:'指定時間だけ待ってから続けます',
+      tool_wait_for:'対象を待つ',toolHint_wait_for:'ウィンドウ、コントロール、文字の出現を待ちます',
+      tool_tools:'ツールの説明と管理',toolHint_tools:'説明を確認し、許可したツールを管理します',
+      custom:'カスタム',customSummary:'読み込むツールを自分で選びます',customMemory:'プリセットを切り替えても個別の選択は残ります。保存すると反映されます。',
+      lazy:'必要時',lazySummary:'起動時は管理用の 1 つだけを読み込み、必要になったらツールを読み込みます',lazyCount:'起動時 1 件 · 24 件を許可',
+      lazyHint:'デスクトップ作業の前にツールを読み込むため、ツール呼び出しが 1 回増えます。読み込んだツールはコンテキストを使います。',
+      remoteVisible:'リモートと録画でも表示',remoteVisibleHint:'リモートアクセス、画面共有、録画でも操作中の表示とマウスのラベルを写します。既定でオンで、仮想ディスプレイにも有効です。',
+      pluginDescription:'AI が Windows のアプリと Web ページを操作します。ブラウザ操作、操作中の表示、停止ショートカット、ツール選択を設定できます。',
+      openSettings:'クリックして設定 →',
+      notLoaded:'コンピューター操作の設定を読み取れませんでした。ホストがこの設定を公開していません。ページを再読み込みするか、DSH を再起動してください。',
+      loadingSettings:'コンピューター操作の設定を読み込んでいます…',reloadSettings:'ページを再読み込み',moreInfo:'説明',
+      browserTitle:'ブラウザ操作（Browser Use）',
+      browserInfo:'DSH 専用のブラウザが別に起動し、お使いのブラウザは使いません。既定では毎回一時的な空のプロファイルで起動し、あなたのサインイン、Cookie、履歴は引き継ぎません。「サインインを保持」をオンにすると 1 つのプロファイルを保ちます。DSH の終了時、または 10 分間操作がないときに閉じます。',
+      browserApp:'使用するブラウザ',
+      browserAppHint:'Windows の既定のブラウザに従います。それが Edge でも Chrome でもない場合は、インストール済みの Chrome か Edge を使います。Firefox 系（Firefox、LibreWolf、Floorp、Waterfox、Vantage など）はここで選び、Windows の既定のものが優先されます。変更は現在の操作の終了後に反映され、開いている DSH のブラウザは閉じます。',
+      browserApp_default:'既定のブラウザ',browserApp_edge:'Edge',browserApp_chrome:'Chrome',browserApp_firefox:'Firefox 系（試験的）',
+      firefoxNotice:'Firefox 系は試験的な機能です。DSH が起動する Firefox はウィンドウなしでバックグラウンドで動くため、「ブラウザウィンドウを表示」はオフになります。ウィンドウを見たいときは、--remote-debugging-port を付けて自分でブラウザを起動し、WCU_BROWSER_BIDI_URL（BiDi のアドレス）で接続してください。1 つのブラウザが同時に受け付ける操作セッションは 1 つだけです。サインインを保持すると Firefox 用のプロファイルが別に残りますが、ウィンドウがないため手動ではサインインできません。',
+      browserAppShort:'既定',
+      browserSignIn:'サインインを保持（Cookie）',
+      browserSignInHint:'既定はオフです。DSH のブラウザは毎回新しい一時プロファイルで起動するため、サイトからは未サインインに見えます。オンにすると 1 つのプロファイルを保ち、そのウィンドウでサインインしたサイトはサインインしたままになります（下記参照）。変更は現在の操作の終了後に反映され、開いている DSH のブラウザは閉じます。',
+      signInSetup:'使い方',
+      signInStep1:'DSH のブラウザはプロファイルを保持します。そのウィンドウ（青い枠）でサインインしたサイトは、次回もサインインしたままです。お使いのブラウザ側の設定は不要で、許可を求めるダイアログも出ません。',
+      signInStep2:'サインインを求められたサイトを初めて使うとき、DSH はそのウィンドウでのサインインを 1 回お願いします。パスワードや確認コードはご自身で入力してください。DSH は代わりに入力しません。',
+      signInStepHidden:'現在「ブラウザウィンドウを表示」がオフのため、DSH のブラウザが見えません。サインインするにはオンにしてください。',
+      signInStepEdge:'Edge を使うと、Edge がこのプロファイルを Windows の Microsoft アカウントでサインインするため、Bing や Outlook などの Microsoft のサイトは最初からサインイン状態になります。避けたい場合は Chrome を選んでください。',
+      signInStep3:'サインインはこの PC の次のフォルダーに保存され、オフに戻しても残ります。すべて削除するには、DSH を終了してこのフォルダーを削除してください。',
+      signInRisks:'リスク',
+      signInRisk1:'DSH は、DSH のブラウザでサインインしたサイト上であなたの代わりに操作します。メッセージの送信、注文、削除も起こりえます。エージェントには事前に確認するよう指示していますが、完全には保証できません。',
+      signInRisk2:'Web ページ上の文字によって、頼んでいない操作をエージェントが行うよう誘導される可能性があります。',
+      signInRisk3:'DSH のブラウザが動いている間は、この PC 上の他のプログラムもそのデバッグポート経由で接続し、中のサインイン状態を利用できます。',
+      copy:'コピー',copied:'コピーしました',
+      browserFirst:'Web ページはブラウザ操作を優先',browserFirstHint:'直接読み書きできるページはバックグラウンドで処理し、ポインターを動かしません。ブラウザ自身のモーダルダイアログはウィンドウを前面に出すことがあります。デスクトップアプリ、ブラウザのツールバー、読み取れないページ内容はコンピューター操作で行います。',
+      browserVisible:'ブラウザウィンドウを表示',browserVisibleHint:'オンのときは、DSH ブルーの枠を持つ DSH ブラウザのウィンドウが開きます。DSH が操作しているタブはアイコンが青い矢印になり、ページ上の小さな矢印がクリック位置を示します。ページを覆わず、ポインターも動きません。通常のページ操作はバックグラウンドで実行され、ブラウザ自身のモーダルダイアログはウィンドウを短時間前面に出すことがあります。オフのときはウィンドウなしでバックグラウンド動作します。変更は現在の操作の終了後に反映され、開いている DSH のブラウザは閉じます。',
+      toolsInfo:'すべて：起動時に 25 のツールを読み込みます。簡易：よく使う 11 のツールだけを読み込み、コンテキストを節約します。必要時：起動時は管理用の 1 つだけを読み込み、最初のデスクトップ作業でツールを読み込みます（ツール呼び出しが 1 回増えます）。カスタム：自分で選び、プリセットを切り替えても選択を保ちます。保存した変更は現在の操作の終了後に反映されます。',
+      indicatorInfo:'DSH がマウスとキーボードを使うときは、画面の縁、バナー、マウスのラベルで知らせます。ブラウザ操作、画面の読み取り、バックグラウンドのコントロール操作では表示しません。',
+      escAlways:'常に有効',listeningCancel:'Esc で中止',
+      see:'画面を見ました',read:'UI コントロールを読みました',windows:'開いているウィンドウを確認しました',findControl:'コントロールを探しました',
+      clickAction:'対象をクリックしました',doubleClick:'対象をダブルクリックしました',movePointer:'マウスを動かしました',dragAction:'対象をドラッグしました',
+      scrollAction:'ページをスクロールしました',typeAction:'テキストを入力しました',keyAction:'キーを送りました',focusAction:'対象のコントロールにフォーカスしました',
+      invokeAction:'対象のコントロールを操作しました',valueAction:'コントロールに値を入力しました',windowAction:'対象のウィンドウに切り替えました',
+      waitAction:'画面の応答を待ちました',ocrAction:'画面の文字を認識しました',verifyAction:'操作の結果を確認しました',
+      closeAction:'ウィンドウの閉じる要求をしました',moveWindowAction:'ウィンドウを移動しました',launchAction:'アプリの起動を要求しました',
+      healthAction:'デスクトップサービスを確認しました',toolsAction:'ツール設定を確認しました',
+      working:'操作中…',completed:'完了',failedAction:'未完了',stoppedAction:'停止',seriesTitle:'今回のデスクトップ操作',
+      sentOnly:'操作は送信済みですが、結果は未確認です',showDetails:'手順とスクリーンショット',
+      searchSubmitted:'ブラウザで検索を送信',searchObserved:'ブラウザで検索',seriesCount:'ステップ',stepError:'操作に失敗しました',and:'、次に '
+    };
     const shortTool=name=>String(name||'').replace(/^(?:mcp__wincu__)?windows_computer_use_/,'');
     const desktopTool=name=>/^(?:mcp__wincu__)?windows_computer_use_(?!health$|tools$)[a-z_]+$/.test(name||'');
     const objectArgs=value=>{if(typeof value==='string')try{return JSON.parse(value);}catch{return {};}return value&&typeof value==='object'?value:{};};
@@ -539,7 +650,7 @@ window.__ModuleLoader__.load({
     function seriesText(calls,t){
       const textCall=calls.find(c=>c.status==='completed'&&shortTool(c.name)==='type_text'&&typeof objectArgs(c.args).text==='string');
       const query=textCall?objectArgs(textCall.args).text.trim():'';
-      const searchWindow=calls.find(c=>c.status==='completed'&&/搜索|search|bing|google|百度/i.test(String(objectArgs(c.args).windowTitle||receipt(c.message).window?.title||'')));
+      const searchWindow=calls.find(c=>c.status==='completed'&&/検索|搜索|search|bing|google|yahoo|百度/i.test(String(objectArgs(c.args).windowTitle||receipt(c.message).window?.title||'')));
       const submitted=textCall&&calls.find(c=>c.seq>textCall.seq&&shortTool(c.name)==='keypress'&&(objectArgs(c.args).keys||[]).some(key=>/^enter$/i.test(key))&&c.status==='completed');
       if(searchWindow&&submitted&&query&&query.length<=100&&!/[\r\n]/.test(query)){
         const observed=calls.some(c=>c.seq>submitted.seq&&['screenshot','snapshot','ocr','wait_for'].includes(shortTool(c.name))&&c.status==='completed'&&(String(receipt(c.message).window?.title||'').includes(query)||(shortTool(c.name)==='wait_for'&&receipt(c.message).verification==='observed'&&objectArgs(c.args).query===query)));
@@ -606,8 +717,13 @@ window.__ModuleLoader__.load({
       return ()=>{top.disconnect();for(const observer of layers.values())observer.disconnect();layers.clear();style.remove();for(const button of document.querySelectorAll('[data-wincu-nav]'))button.removeAttribute('data-wincu-nav');};
     }
     function apply(ctx) {
+      // Japanese ships as a language pack beside the built-in zh/en, so the
+      // Language row in Settings > General offers 日本語 and a Japanese Windows
+      // (navigator.languages: ja-JP) starts in it. Registration is optional:
+      // an older host without addLanguage keeps zh/en and the page still works.
+      ctx.effect(()=>{try{return ctx.locale.addLanguage?.({id:'ja',label:'日本語',fallback:'en'});}catch(error){console.warn('dsh-computer-use-win: the Japanese language pack could not be registered',error);return ()=>{};}});
       ctx.effect(()=>ctx.locale.register(NS,dictionaries));
-      ctx.effect(()=>watchNavIcon([dictionaries.zh.nav,dictionaries.en.nav]));
+      ctx.effect(()=>watchNavIcon([dictionaries.zh.nav,dictionaries.en.nav,dictionaries.ja.nav]));
       registerActivity(ctx);
       const t=ctx.locale.bind?ctx.locale.bind(NS):key=>key;
       let mounted=false;

@@ -15,6 +15,80 @@ using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
 namespace DshTakeover {
+  // The banner text and the Esc hint follow the Windows display language:
+  // Japanese on a Japanese Windows, Chinese or English elsewhere. GDI+
+  // DrawString does no font fallback, so the font is chosen for the text's
+  // script from families this Windows actually has — drawing Japanese kana
+  // with Microsoft YaHei (or on a machine without the Chinese fonts) would
+  // show boxes instead of text. Public so the locale contract test can check
+  // the chosen text and font.
+  public static class UiText {
+    static HashSet<string> installed;
+    static readonly object gate = new object();
+    static string language;
+    static HashSet<string> Installed() {
+      lock (gate) {
+        if (installed != null) return installed;
+        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        try { using (var fonts = new InstalledFontCollection()) foreach (var family in fonts.Families) set.Add(family.Name); }
+        catch (Exception) { }
+        installed = set;
+        return set;
+      }
+    }
+    // Two-letter UI language of this Windows ("ja" on Japanese Windows).
+    public static string Language() {
+      if (language != null) return language;
+      string name = "";
+      try { name = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName; }
+      catch (Exception) { }
+      language = name;
+      return language;
+    }
+    public static string Banner() {
+      switch (Language()) {
+        case "ja": return "DSH がコンピューターを操作しています";
+        case "ko": return "DSH가 컴퓨터를 제어하고 있습니다";
+        case "zh": return "DSH 正在控制电脑";
+        default: return "DSH is controlling your computer";
+      }
+    }
+    public static string StopHint() {
+      switch (Language()) {
+        case "ja": return "停止";
+        case "ko": return "중지";
+        case "zh": return "停止";
+        default: return "Stop";
+      }
+    }
+    // Kana and Hangul only come from their own fonts, Han characters read
+    // best in the UI language's font, and Latin text stays in Segoe UI.
+    static string[] Preferred(string text) {
+      bool kana = false, hangul = false, han = false;
+      string value = text == null ? "" : text;
+      foreach (char c in value) {
+        if ((c >= '\u3040' && c <= '\u30FF') || (c >= '\uFF66' && c <= '\uFF9D')) kana = true;
+        else if (c >= '\uAC00' && c <= '\uD7AF') hangul = true;
+        else if ((c >= '\u4E00' && c <= '\u9FFF') || (c >= '\u3400' && c <= '\u4DBF') || (c >= '\uF900' && c <= '\uFAFF')) han = true;
+      }
+      if (kana) return new string[] { "Yu Gothic UI", "Meiryo UI", "Yu Gothic", "Meiryo", "MS UI Gothic", "Microsoft YaHei UI", "Segoe UI" };
+      if (hangul) return new string[] { "Malgun Gothic", "Segoe UI" };
+      if (han) {
+        if (Language() == "ja") return new string[] { "Yu Gothic UI", "Meiryo UI", "MS UI Gothic", "Microsoft YaHei UI", "Segoe UI" };
+        return new string[] { "Microsoft YaHei UI", "Microsoft JhengHei UI", "Yu Gothic UI", "Segoe UI" };
+      }
+      return new string[] { "Segoe UI" };
+    }
+    public static Font Pick(string text, float size, FontStyle style) {
+      foreach (var name in Preferred(text)) {
+        if (!Installed().Contains(name)) continue;
+        try { return new Font(name, size, style); }
+        catch (ArgumentException) { }
+      }
+      return new Font("Segoe UI", size, style);
+    }
+  }
+
   // PowerShell 7 uses modern .NET, where System.Web's serializer is unavailable.
   // Keep the command dictionary's primitive/array shapes identical on both runtimes.
   internal sealed class CommandJson {
@@ -139,7 +213,7 @@ namespace DshTakeover {
     DateTime hideAt = DateTime.MaxValue;
     bool indicator = true, cursorIndicator = true, remoteVisible = true;
     int cursorError;
-    string text = "DSH 正在控制电脑", position = "top";
+    string text = UiText.Banner(), position = "top";
     int idleMs = 800;
 
     internal Controller(string eventName, bool tests) {
@@ -217,7 +291,7 @@ namespace DshTakeover {
           bool nextIndicator = Get(command, "indicatorEnabled", true);
           ConfigureVisibility(Get(command,"remoteIndicatorVisible",true));
           cursorIndicator = Get(command, "cursorIndicatorEnabled", true);
-          string nextText = Get(command, "indicatorText", "DSH 正在控制电脑"), nextPosition = Get(command, "indicatorPosition", "top");
+          string nextText = Get(command, "indicatorText", UiText.Banner()), nextPosition = Get(command, "indicatorPosition", "top");
           bool rebuild = nextIndicator != indicator || nextText != text || nextPosition != position || frames.Count == 0;
           indicator = nextIndicator; text = nextText; position = nextPosition;
           idleMs = Math.Max(200, Math.Min(3000, Get(command, "indicatorIdleMs", 800)));
@@ -537,11 +611,11 @@ namespace DshTakeover {
         }
         g.CompositingMode = CompositingMode.SourceOver;
         // Status pill: live dot, the user's text, then an Esc keycap.
-        using (var font = new Font("Microsoft YaHei UI",10.5f*scale,FontStyle.Regular,GraphicsUnit.Point))
-        using (var keyFont = new Font("Segoe UI",8.5f*scale,FontStyle.Bold,GraphicsUnit.Point))
-        using (var hintFont = new Font("Microsoft YaHei UI",9.5f*scale,FontStyle.Regular,GraphicsUnit.Point))
+        string hint = UiText.StopHint();
+        using (var font = UiText.Pick(text,10.5f*scale,FontStyle.Regular))
+        using (var keyFont = UiText.Pick("Esc",8.5f*scale,FontStyle.Bold))
+        using (var hintFont = UiText.Pick(hint,9.5f*scale,FontStyle.Regular))
         using (var measure = new StringFormat(StringFormat.GenericTypographic) { FormatFlags = StringFormatFlags.NoWrap | StringFormatFlags.MeasureTrailingSpaces }) {
-          const string hint = "停止";
           float pillHeight=40*scale, padding=16*scale, dot=8*scale, gap=10*scale, keyHeight=20*scale;
           float keyWidth=g.MeasureString("Esc",keyFont,PointF.Empty,measure).Width+12*scale;
           float hintWidth=g.MeasureString(hint,hintFont,PointF.Empty,measure).Width;

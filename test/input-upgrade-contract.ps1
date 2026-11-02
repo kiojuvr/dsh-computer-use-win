@@ -3,7 +3,7 @@ $ErrorActionPreference='Stop'
 $tokens=$null; $parseErrors=$null
 $ast=[System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot '../scripts/windows-uia.ps1'),[ref]$tokens,[ref]$parseErrors)
 if($parseErrors.Count){throw ($parseErrors | Out-String)}
-foreach($name in @('Get-Prop','Get-ViewMode','Invoke-Safe','Test-TargetMatch','Get-ButtonFlags','Move-ToPoint','Type-Text','Convert-KeyChord','Get-OcrWordBounds','Find-OcrWordRun','Invoke-Action')) {
+foreach($name in @('Get-Prop','Get-ViewMode','Invoke-Safe','Convert-MatchText','Test-TargetMatch','Get-ButtonFlags','Move-ToPoint','Type-Text','Convert-KeyChord','Get-OcrWordBounds','Find-OcrWordRun','Invoke-Action')) {
   $f=$ast.Find({param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq $name},$true)
   . ([scriptblock]::Create($f.Extent.Text.Replace('System.Windows.Forms','Fixture.Forms')))
 }

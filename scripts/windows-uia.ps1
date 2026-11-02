@@ -54,6 +54,21 @@ function Get-Prop {
   return $prop.Value
 }
 
+# Japanese (and other CJK) UIs spell the same label in more than one width:
+# "ﾌｧｲﾙ" and "ファイル", "OK" and "ＯＫ", or the ideographic space U+3000 the
+# IME inserts. Match on the compatibility-normalized form so a query typed in
+# either width still finds the control, and a window title copied from the
+# screen still matches the real title. NFKC also folds width variants of Latin
+# letters and digits, so "Ｔｅｓｔ" matches "Test".
+function Convert-MatchText {
+  param([string]$Text)
+  if ([string]::IsNullOrEmpty($Text)) { return "" }
+  $value = $Text
+  try { $value = $Text.Normalize([System.Text.NormalizationForm]::FormKC) }
+  catch { $value = $Text }
+  return $value
+}
+
 function Get-ViewMode {
   param([object]$InputObject, [string]$Default = "control")
   $mode = ("" + (Get-Prop $InputObject "viewMode" $Default)).Trim().ToLowerInvariant()
@@ -650,8 +665,8 @@ function Test-TargetMatch {
   $hwnd = Get-Prop $InputObject "nativeWindowHandle" $null
 
   if (-not [string]::IsNullOrWhiteSpace($title)) {
-    $name = "" + $Info.name
-    if ($name.IndexOf($title, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) { return $false }
+    $name = Convert-MatchText ("" + $Info.name)
+    if ($name.IndexOf((Convert-MatchText $title), [System.StringComparison]::OrdinalIgnoreCase) -lt 0) { return $false }
   }
   if ($null -ne $processId -and [int]$Info.processId -ne [int]$processId) { return $false }
   if ($null -ne $hwnd -and [int64]$Info.nativeWindowHandle -ne [int64]$hwnd) { return $false }
@@ -1229,8 +1244,10 @@ function Post-BackgroundText {
 
 $script:WcuOcrCs = @'
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Globalization;
 using Windows.Media.Ocr;
 using Windows.Storage;
 using Windows.Graphics.Imaging;
@@ -1249,20 +1266,42 @@ public static class WindowsComputerUseOcr {
     return tcs.Task.GetAwaiter().GetResult();
   }
 
+  // Language tags the installed OCR packs can read, one per line. A Japanese
+  // Windows usually offers only "ja"; English text then reads through the
+  // Japanese pack, which also covers Latin letters and digits.
+  public static string Languages() {
+    var tags = new List<string>();
+    foreach (Language language in OcrEngine.AvailableRecognizerLanguages) tags.Add(language.LanguageTag);
+    return String.Join("\n", tags.ToArray());
+  }
+
   // Returns tab-separated lines:
-  //   LANG\t<language tag>
+  //   LANG\t<language tag actually used>
   //   TEXT\t<full text, newlines as \n>
   //   LINE\t<line text>\t<word>@x,y,w,h;<word>@x,y,w,h;...
-  public static string Recognize(string pngPath) {
+  public static string Recognize(string pngPath) { return Recognize(pngPath, null); }
+
+  // languageTag selects the OCR pack ("ja", "ja-JP", "en-US"); null or empty
+  // keeps the user-profile order Windows picks for the display language.
+  public static string Recognize(string pngPath, string languageTag) {
     try {
       StorageFile file = WaitOp(StorageFile.GetFileFromPathAsync(pngPath));
       var stream = WaitOp(file.OpenAsync(FileAccessMode.Read));
       var decoder = WaitOp(BitmapDecoder.CreateAsync(stream));
       var bitmap = WaitOp(decoder.GetSoftwareBitmapAsync());
-      OcrEngine engine = OcrEngine.TryCreateFromUserProfileLanguages();
-      if (engine == null) throw new Exception("No OCR engine available (no OCR language installed for this system).");
+      OcrEngine engine = null;
+      if (!String.IsNullOrEmpty(languageTag) && Language.IsWellFormed(languageTag)) {
+        engine = OcrEngine.TryCreateFromLanguage(new Language(languageTag));
+      }
+      if (engine == null) engine = OcrEngine.TryCreateFromUserProfileLanguages();
+      if (engine == null) {
+        string available = Languages();
+        throw new Exception("No OCR engine available (no OCR language installed for this system)."
+          + (available.Length == 0 ? "" : " Installed OCR languages: " + available.Replace("\n", ", ") + "."));
+      }
       OcrResult result = WaitOp(engine.RecognizeAsync(bitmap));
       var sb = new StringBuilder();
+      sb.Append("LANG\t").AppendLine(engine.RecognizerLanguage.LanguageTag);
       sb.Append("TEXT\t").AppendLine(result.Text.Replace("\r", "").Replace("\n", "\\n"));
       foreach (OcrLine line in result.Lines) {
         var ws = new StringBuilder();
@@ -1294,7 +1333,7 @@ function Get-OcrHelper {
     # Only the winmds the C# code touches (plus the framework facades csc
     # needs for WinRT binding). Keeping the set small also keeps the command
     # line short.
-    $need = @("Windows.Media.winmd", "Windows.Storage.winmd", "Windows.Graphics.winmd", "Windows.Foundation.winmd")
+    $need = @("Windows.Media.winmd", "Windows.Storage.winmd", "Windows.Graphics.winmd", "Windows.Globalization.winmd", "Windows.Foundation.winmd")
     $winmdRefs = @()
     foreach ($n in $need) {
       $p = Join-Path $wd $n
@@ -1326,9 +1365,12 @@ function Get-OcrHelper {
 
 function Invoke-Ocr {
   # OCR a PNG file; word boxes come back in the image's pixel coordinates.
-  param([string]$PngPath)
+  # Language selects an installed OCR pack ("ja", "ja-JP", "en-US"); an empty
+  # value keeps the user-profile order Windows uses for the display language,
+  # which is Japanese on a Japanese Windows.
+  param([string]$PngPath, [string]$Language = '')
   Get-OcrHelper
-  $raw = [WindowsComputerUseOcr]::Recognize($PngPath)
+  $raw = if ([string]::IsNullOrWhiteSpace($Language)) { [WindowsComputerUseOcr]::Recognize($PngPath) } else { [WindowsComputerUseOcr]::Recognize($PngPath, $Language) }
   $linesOut = @()
   $fullText = ""
   $lang = ""
@@ -1350,7 +1392,8 @@ function Invoke-Ocr {
       $linesOut += [ordered]@{ text = $lineText; words = $words }
     }
   }
-  return [ordered]@{ text = $fullText.Replace("\\n", "`n"); lines = $linesOut; language = $lang }
+  $available = @([WindowsComputerUseOcr]::Languages() -split "`n" | Where-Object { $_ })
+  return [ordered]@{ text = $fullText.Replace("\\n", "`n"); lines = $linesOut; language = $lang; availableLanguages = $available }
 }
 
 function Get-OcrWordBounds {
@@ -1380,9 +1423,9 @@ function Find-OcrWordRun {
   # Keep normalized offsets tied to actual words, rather than assuming that
   # OCR line text inserts exactly one separator between adjacent words.
   param([object[]]$Words, [string]$Query)
-  $normalizedQuery = [regex]::Replace($Query, '\s+', '')
+  $normalizedQuery = [regex]::Replace((Convert-MatchText $Query), '\s+', '')
   if ($normalizedQuery.Length -eq 0) { return $null }
-  $parts = @($Words | ForEach-Object { [regex]::Replace([string]$_.text, '\s+', '') })
+  $parts = @($Words | ForEach-Object { [regex]::Replace((Convert-MatchText ([string]$_.text)), '\s+', '') })
   $text = $parts -join ''
   $start = $text.IndexOf($normalizedQuery, [System.StringComparison]::OrdinalIgnoreCase)
   if ($start -lt 0) { return $null }
@@ -1850,15 +1893,15 @@ function Element-Matches {
     if (($Info.controlType + "") -notlike "*$ControlType*") { return $false }
   }
   if ([string]::IsNullOrWhiteSpace($Query)) { return $true }
-  $haystack = @(
+  $haystack = Convert-MatchText (@(
     $Info.name,
     $Info.automationId,
     $Info.className,
     $Info.controlType,
     $Info.localizedControlType,
     $Info.value
-  ) -join "`n"
-  return $haystack.IndexOf($Query, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+  ) -join "`n")
+  return $haystack.IndexOf((Convert-MatchText $Query), [System.StringComparison]::OrdinalIgnoreCase) -ge 0
 }
 
 function Search-Tree {
@@ -2558,8 +2601,11 @@ function Resolve-LaunchTarget {
     if ([IO.Path]::GetExtension($file) -notin @('.exe', '.com', '.lnk')) { throw 'LAUNCH_INVALID_TARGET: only .exe, .com and .lnk files are supported.' }
     return @{ target=$file; kind='file' }
   }
-  # Exact matching prevents an ambiguous display name from launching the wrong app.
-  $apps = @(Get-StartApps -ErrorAction Stop | Where-Object { $_.AppID -ieq $targetValue -or $_.Name -ieq $targetValue })
+  # Exact matching prevents an ambiguous display name from launching the wrong
+  # app. The name is compared in its compatibility form, so a Japanese app
+  # name typed with the IME in either width ("メモ帳", "ﾒﾓ帳") still matches.
+  $wanted = Convert-MatchText $targetValue
+  $apps = @(Get-StartApps -ErrorAction Stop | Where-Object { $_.AppID -ieq $targetValue -or $_.Name -ieq $targetValue -or (Convert-MatchText ([string]$_.Name)) -ieq $wanted })
   if ($apps.Count -eq 0) { throw "LAUNCH_NOT_FOUND: '$targetValue'. Supply a full executable path or an installed AppUserModelID." }
   if ($apps.Count -ne 1) { throw "LAUNCH_AMBIGUOUS: '$targetValue' matches several installed apps; use its AppUserModelID or full executable path." }
   return @{ target=('shell:AppsFolder\' + $apps[0].AppID); kind='installed-app' }
@@ -3230,7 +3276,9 @@ function Invoke-Action {
             if (Test-TargetMatch $info $inputObject) { $found=$true; break }
           }
         } elseif ($condition -eq 'text') {
-          $observationArgs = [pscustomobject]@{scope=(Get-Prop $inputObject 'scope' 'active_window');windowTitle=(Get-Prop $inputObject 'windowTitle' $null);processId=(Get-Prop $inputObject 'processId' $null);nativeWindowHandle=(Get-Prop $inputObject 'nativeWindowHandle' $null);query=$query;resolveControl=$false;activate=$false;_wcuSeries=$script:WcuSeries}
+          # A Japanese Windows reads English text poorly with its "ja" pack, so
+          # a caller may name the pack to read this text with.
+          $observationArgs = [pscustomobject]@{scope=(Get-Prop $inputObject 'scope' 'active_window');windowTitle=(Get-Prop $inputObject 'windowTitle' $null);processId=(Get-Prop $inputObject 'processId' $null);nativeWindowHandle=(Get-Prop $inputObject 'nativeWindowHandle' $null);query=$query;language=(Get-Prop $inputObject 'language' '');resolveControl=$false;activate=$false;_wcuSeries=$script:WcuSeries}
           $observation = Invoke-Action 'ocr' $observationArgs
           $found = $observation.matched.Count -gt 0
           $conclusive = -not [bool]$observation.occludedPossible
@@ -3309,6 +3357,9 @@ function Invoke-Action {
       $scope = Get-Prop $inputObject "scope" "active_window"
       $maxWidth = [int](Get-Prop $inputObject "maxWidth" 1920)
       $query = [string](Get-Prop $inputObject "query" "")
+      # A Japanese Windows reads Japanese through its "ja" OCR pack; an English
+      # or Chinese page is better read by requesting that pack here.
+      $language = ([string](Get-Prop $inputObject "language" "")).Trim()
       $winEl = $null
       $activationRefused = $false
       if (Has-WindowTarget $inputObject) {
@@ -3333,7 +3384,7 @@ function Invoke-Action {
       $origY = [int]$shot.bounds.y
       $scale = 1.0
       if ($null -ne $shot.imageScale) { $scale = [double]$shot.imageScale }
-      $ocr = Invoke-Ocr -PngPath $shot.path
+      $ocr = if ($language) { Invoke-Ocr -PngPath $shot.path -Language $language } else { Invoke-Ocr -PngPath $shot.path }
       $lines = @()
       foreach ($line in $ocr.lines) {
         $words = @()
@@ -3390,11 +3441,18 @@ function Invoke-Action {
       $result['imageScale'] = $scale
       $result['captureMethod'] = $shot.method
       $result['occludedPossible'] = $shot.occludedPossible
+      # Which installed OCR pack read the image, and which packs exist here.
+      $result['language'] = [string]$ocr.language
+      $availableLanguages = @($ocr.availableLanguages | Where-Object { $_ })
+      if ($availableLanguages.Count -gt 0) { $result['availableLanguages'] = $availableLanguages }
+      if ($language -and $result.language -and $result.language -ne $language -and $result.language.Split('-')[0] -ne $language.Split('-')[0]) {
+        $result['warning'] = "OCR language '$language' is not installed, so '$($result.language)' read the image instead. Installed OCR languages: $($availableLanguages -join ', ')."
+      }
       if ([bool](Get-Prop $inputObject 'includeScreenshot' $false)) { $result['screenshot'] = $shot }
       if ($query.Length -gt 0) {
         $result["query"] = $query
         $result["matched"] = $matched
-        if ($matched.Count -eq 0) { $result["note"] = "No OCR word sequence matched the query (case-insensitive, ignoring whitespace). Inspect 'lines' for the recognized text and word boxes." }
+        if ($matched.Count -eq 0) { $result["note"] = "No OCR word sequence matched the query (case-insensitive, ignoring whitespace and character width). Inspect 'lines' for the recognized text and word boxes." }
       }
       if ($activationRefused) {
         $result["warning"] = "activate:true was requested but the window could not be brought to the foreground (Windows foreground lock); the capture may show overlapping content."

@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { TakeoverControl, STOPPED } from './takeover.mjs';
 import { TOOL_NAMES, normalizeEnabledTools, browserRoutingInstructions } from './settings.mjs';
+import { settingsPathHint } from './system-locale.mjs';
 import { BrowserLane, isBrowserCall, isQuietCall, BACKGROUND_FIRST } from './browser.mjs';
 
 const MCP_PROTOCOL_VERSION = "2024-11-05";
@@ -204,7 +205,7 @@ const tools = [
   },
   {
     name: "windows_computer_use_find",
-    description: "Find UIA elements by name, automation id, class, value or type. When UIA is sparse or incomplete and no match is found, automatically read visible text with OCR. OCR candidates have SCREEN coordinates and source:'ocr', not UIA element ids. If the literal query misses, inspect ocr.lines and reformulate using the visible text (a search box may say '大家都在搜'). With browserTab, search that page's accessibility outline instead and return page element ids.",
+    description: "Find UIA elements by name, automation id, class, value or type. Matching is case-insensitive and ignores character width, so half-width katakana, full-width Latin and full-width digits match their normal forms. When UIA is sparse or incomplete and no match is found, automatically read visible text with OCR. OCR candidates have SCREEN coordinates and source:'ocr', not UIA element ids. If the literal query misses, inspect ocr.lines and reformulate using the visible text (a search box may say '大家都在搜' or '検索'). With browserTab, search that page's accessibility outline instead and return page element ids.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -438,7 +439,7 @@ const tools = [
   },
   {
     name: "windows_computer_use_ocr",
-    description: "Read visible text with Windows.Media.Ocr, independent of UIA by default. Returns text, lines and word boxes in SCREEN coordinates. query is literal text matching, not semantic recognition; inspect lines if 'search' misses a placeholder. Click matched.word.x/y using foreground dispatch, then type_text with focusMode:'preserve'. Optional resolveControl performs a potentially blocking UIA hit-test; its control may be the whole page rather than the text input.",
+    description: "Read visible text with Windows.Media.Ocr, independent of UIA by default. Returns text, lines and word boxes in SCREEN coordinates. The OCR pack follows the Windows display language (Japanese on a Japanese Windows); pass language to read another script better, and check language and availableLanguages in the result. query is literal text matching, not semantic recognition; inspect lines if 'search' misses a placeholder. Click matched.word.x/y using foreground dispatch, then type_text with focusMode:'preserve'. Optional resolveControl performs a potentially blocking UIA hit-test; its control may be the whole page rather than the text input.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -448,9 +449,13 @@ const tools = [
         maxWidth: { type: "integer", minimum: 0, maximum: 7680, default: 1920 },
         resolveControl: { type: "boolean", default: false },
         includeScreenshot: { type: "boolean", default: false },
+        language: {
+          type: "string",
+          description: "Optional BCP 47 tag of an installed OCR pack, such as ja, ja-JP, en-US or zh-Hans-CN. Omit to use the Windows display language. availableLanguages lists the packs installed here; an unavailable tag falls back to the display language and reports a warning."
+        },
         query: {
           type: "string",
-          description: "Optional literal text query, case-insensitive and ignoring whitespace. Returns up to 3 matched word runs with screen boundingBox and center in word.x/y. control is null unless resolveControl:true opts into a UIA hit-test. Supports character-segmented CJK text."
+          description: "Optional literal text query, case-insensitive and ignoring whitespace and character width, so half-width katakana, full-width Latin and full-width digits match their normal forms. Returns up to 3 matched word runs with screen boundingBox and center in word.x/y. control is null unless resolveControl:true opts into a UIA hit-test. Supports character-segmented CJK text."
         }
       }
     }
@@ -467,7 +472,7 @@ const tools = [
   },
   {
     name: "windows_computer_use_wait_for",
-    description: "Wait for a window, a UIA element, or literal visible OCR text to appear/disappear. condition:'window' uses native window enumeration; 'element' uses a bounded UIA query; 'text' uses OCR without UIA. Returns verification:'observed' only when the condition was observed; truncated UIA absence is inconclusive. Text is literal, so use the actual expected text, not an inferred semantic label. With browserTab, element/text conditions poll that page's accessibility outline.",
+    description: "Wait for a window, a UIA element, or literal visible OCR text to appear/disappear. condition:'window' uses native window enumeration; 'element' uses a bounded UIA query; 'text' uses OCR without UIA, in the Windows display language unless language names another installed OCR pack. Returns verification:'observed' only when the condition was observed; truncated UIA absence is inconclusive. Text is literal, so use the actual expected text, not an inferred semantic label. With browserTab, element/text conditions poll that page's accessibility outline.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -476,6 +481,7 @@ const tools = [
         ...browserTabProperty,
         condition: { type: "string", enum: ["window", "element", "text"], default: "window" },
         query: { type: "string" },
+        language: { type: "string", description: "condition:'text' only: BCP 47 tag of an installed OCR pack, such as en-US on a Japanese Windows, to read text the display language's pack misreads. Omit to use the Windows display language." },
         controlType: { type: "string" },
         scope: { type: "string", enum: ["active_window", "desktop"], default: "active_window" },
         ...treeViewProperties,
@@ -635,7 +641,7 @@ function manageTools(args) {
   } else {
     if (args.operation === 'reset' && names.length) throw new Error('INVALID_ARGUMENTS: reset takes no names');
     if (args.operation !== 'reset' && !requested.length) throw new Error('INVALID_ARGUMENTS: enable/disable requires names');
-    if (args.operation === 'enable' && names.some(name=>!allowedTools.has(name))) throw new Error('TOOL_DISABLED_IN_SETTINGS: Change the user-selected tools in Settings > Computer Use (设置 > 电脑操控 in the Chinese interface) before enabling this tool.');
+    if (args.operation === 'enable' && names.some(name=>!allowedTools.has(name))) throw new Error(`TOOL_DISABLED_IN_SETTINGS: Change the user-selected tools in ${settingsPathHint()} before enabling this tool.`);
     const before = [...enabledTools].sort().join(',');
     if (args.operation === 'reset') {
       enabledTools.clear(); for (const name of initialNames) enabledTools.add(name);
@@ -856,10 +862,14 @@ function spawnBackend() {
 
 // "Backend process exited" alone hid why every tool failed (#54). Quote the
 // backend's startup failure line, or else its last lines of error output.
+// PowerShell marks the source line with '+' and a position line, and both are
+// localized: "At <path>:1 char:1" in English, "所在位置" in Chinese and
+// "発生場所" (PowerShell 5.1) or "場所" (7.x) in Japanese.
+const POWERSHELL_POSITION_LINE = /^(?:\+|~|At |所在位置|発生場所|場所[\s:])/;
 function backendExitError(code, stderr) {
   const lines = stderr.split(/\r?\n/).map(line => line.trim()).filter(line => line && !/^stage=\S+ elapsedMs=\d+$/.test(line));
   const startup = lines.findLast(line => line.startsWith("WCU_BACKEND_STARTUP_FAILED"));
-  const detail = startup || lines.filter(line => !/^(?:\+|~|At |所在位置)/.test(line)).slice(-3).join(" | ");
+  const detail = startup || lines.filter(line => !POWERSHELL_POSITION_LINE.test(line)).slice(-3).join(" | ");
   return new Error(`Backend process exited${code == null ? "" : ` (exit code ${code})`}${detail ? `: ${detail.slice(0, 600)}` : ""}`);
 }
 
@@ -940,7 +950,7 @@ function dispatchBackend(action, args = {}, timeoutMs = 30000, request) {
 }
 
 async function callTool(name, args, request) {
-  if (!allowedTools.has(name) && TOOL_NAMES.includes(name.slice(prefix.length))) throw new Error('TOOL_DISABLED_IN_SETTINGS: This tool is disabled by the user in Settings > Computer Use (设置 > 电脑操控 in the Chinese interface).');
+  if (!allowedTools.has(name) && TOOL_NAMES.includes(name.slice(prefix.length))) throw new Error(`TOOL_DISABLED_IN_SETTINGS: This tool is disabled by the user in ${settingsPathHint()}.`);
   if (name === discoveryName) return manageTools(args);
   const definition = tools.find(tool => tool.name === name);
   if (!definition) throw new Error(`Unknown tool: ${name}`);

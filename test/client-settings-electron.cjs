@@ -217,6 +217,13 @@ app.whenReady().then(async()=>{
   assert.equal(await evaluate('window.snapshot.value.enabledTools.length'),24,'Lazy preserves custom restrictions for a later Custom selection');
   await evaluate("window.renderPage('en')");
   await until("document.getElementById('wincu-page-toolPreset-lazy').checked&&document.body.textContent.includes('1 at startup')");
+  // A Japanese Windows renders the same card in Japanese: every key resolves,
+  // and the labels read as Japanese rather than falling back to English.
+  await evaluate("window.renderPage('ja')");
+  await until("document.getElementById('wincu-page-toolPreset-lazy').checked&&document.body.textContent.includes('操作中の表示')");
+  assert.equal(await evaluate("window.dictionary.ja.nav"),'コンピューター操作','The Japanese tab keeps its own name');
+  assert.equal(await evaluate("document.body.textContent.includes('変更を保存')&&document.body.textContent.includes('ツール')"),true,'The Japanese card shows Japanese controls');
+  assert.equal(await evaluate("!!document.querySelector('[data-wincu-settings] [data-wincu-tool]')"),true,'The Japanese card still renders the tool list');
   await evaluate("window.renderPage('zh')");
   await until("document.getElementById('wincu-page-toolPreset-lazy').checked&&document.body.textContent.includes('懒启动')");
   await new Promise(resolve=>setTimeout(resolve,100));
@@ -361,7 +368,7 @@ app.whenReady().then(async()=>{
   await until("document.body.textContent.includes('Press Esc to stop')");
   await evaluate("window.snapshot={...window.snapshot,writable:false};for(const fn of window.listeners)fn()");
   await until("document.getElementById('wincu-page-tool-click').disabled");
-  const report={passed:true,hintAbovePointer:true,api:process.env.WCU_SETTINGS_TEST_API||'modern',navigation:'settings.section/computer-use',compatibilityCard:true,atomicSave:true,draft:true,discard:true,errorPreservesValue:true,readOnly:true,preview:true,noSettingsResumeButton:true,allToolsDefault:true,outerPresets:['lite','full','lazy','custom'],lazySaveAndRemount:true,customSelectionPreserved:true,toolsCollapsedByDefault:true,individualAndGroupSelection:true,emptySelection:true,restoreAllTools:true,shortcutRecording:true,shortcutCombination:true,shortcutCancelAndBlurCleanup:true,shortcutClearDraft:true,restoreDefaultEsc:true,externalLinkButtons:true,cursorIndicatorIndependent:true,cursorIndicatorSaved:true,remoteVisibilityDefault:true,remoteVisibilitySaveAndRestore:true,themes:['light','dark'],nativeControlContrast:contrasts,languages:['zh','en'],physicalInputSent:false,screenshot:path.join(process.env.WCU_SETTINGS_TEST_ROOT,'settings-page.png')};
+  const report={passed:true,hintAbovePointer:true,api:process.env.WCU_SETTINGS_TEST_API||'modern',navigation:'settings.section/computer-use',compatibilityCard:true,atomicSave:true,draft:true,discard:true,errorPreservesValue:true,readOnly:true,preview:true,noSettingsResumeButton:true,allToolsDefault:true,outerPresets:['lite','full','lazy','custom'],lazySaveAndRemount:true,customSelectionPreserved:true,toolsCollapsedByDefault:true,individualAndGroupSelection:true,emptySelection:true,restoreAllTools:true,shortcutRecording:true,shortcutCombination:true,shortcutCancelAndBlurCleanup:true,shortcutClearDraft:true,restoreDefaultEsc:true,externalLinkButtons:true,cursorIndicatorIndependent:true,cursorIndicatorSaved:true,remoteVisibilityDefault:true,remoteVisibilitySaveAndRestore:true,themes:['light','dark'],nativeControlContrast:contrasts,languages:['zh','en','ja'],physicalInputSent:false,screenshot:path.join(process.env.WCU_SETTINGS_TEST_ROOT,'settings-page.png')};
   fs.writeFileSync(path.join(process.env.WCU_SETTINGS_TEST_ROOT,'results.json'),JSON.stringify(report,null,2));
   console.log(JSON.stringify(report));win.destroy();app.quit();
 }).catch(error=>{console.error(error.stack);app.exit(1)});

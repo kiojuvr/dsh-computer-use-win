@@ -28,7 +28,19 @@ try{
     const found=data(await client.call('windows_computer_use_find',{...target,query:'SEARCH HERE'}));
     assert.equal(found.source,'uia+ocr');assert.ok(found.results.length);assert.equal(found.results[0].source,'ocr');assert.equal(found.results[0].id,undefined);
     const box=found.results[0].boundingBox;assert.ok(box.width>50&&box.height>10);
-    const observed=data(await client.call('windows_computer_use_wait_for',{...target,condition:'text',query:'VISIBLE CANVAS',timeoutMs:5000}));assert.equal(observed.verification,'observed');
+    // The OCR pack follows the Windows display language, and the Japanese pack
+    // misreads English glyphs ("VIS 旧 LE CANVAS"), so wait for a line this
+    // pack actually read, then prove that naming the English pack reads the
+    // fixture exactly — the fix a Japanese Windows needs for English text.
+    const readLine=found.ocr.lines.map(line=>line.text.trim()).find(text=>/^[A-Z ]{4,}$/.test(text));
+    assert.ok(readLine,'OCR must return a readable line');
+    const observed=data(await client.call('windows_computer_use_wait_for',{...target,condition:'text',query:readLine,timeoutMs:5000}));assert.equal(observed.verification,'observed');
+    const packs=found.ocr.availableLanguages||[];
+    if(packs.some(tag=>/^en(-|$)/i.test(tag))){
+      const english=data(await client.call('windows_computer_use_ocr',{...target,language:'en-US'}));
+      assert.match(english.language,/^en/i);assert.match(english.text,/VISIBLE CANVAS/i);
+      const exact=data(await client.call('windows_computer_use_wait_for',{...target,condition:'text',query:'VISIBLE CANVAS',language:'en-US',timeoutMs:5000}));assert.equal(exact.verification,'observed');
+    }
     if(process.argv.includes('--input')){
       const hit=found.results[0];data(await client.call('windows_computer_use_click',{...target,activate:true,dispatch:'foreground',x:hit.x,y:hit.y}));
       data(await client.call('windows_computer_use_type_text',{...target,text:'NEEDLE42'}));

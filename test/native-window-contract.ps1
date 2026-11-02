@@ -32,7 +32,7 @@ namespace Fixture {
   }
 }
 '@
-$names = @('Get-Prop','Get-ViewMode','Invoke-Safe','Has-WindowTarget','Test-TargetMatch','Get-NativeWindowList','Resolve-TargetWindow','Resolve-Element','Home-Point')
+$names = @('Get-Prop','Get-ViewMode','Invoke-Safe','Has-WindowTarget','Convert-MatchText','Test-TargetMatch','Get-NativeWindowList','Resolve-TargetWindow','Resolve-Element','Home-Point')
 foreach ($name in $names) {
   $definition = $ast.Find({ param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $name }, $true)
   if ($null -eq $definition) { throw "Missing backend function: $name" }
