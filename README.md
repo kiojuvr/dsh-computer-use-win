@@ -28,22 +28,28 @@
 
 #### 1.2 インストール
 
-1. タスクトレイの DSH アイコンを右クリックし、**DSH ターミナルを開く** を選んで、次を実行します（このフォークを GitHub から入れます）。
+Windows インストーラ版の DSH Desktop にはコンソールがありません。画面の **Plugins** から入れます。
 
-   ```powershell
-   dsh plugin --profile desktop add github:kiojuvr/dsh-computer-use-win
+1. 左ペインの **Plugins** を開き、**Add plugin** を押します。右側の矢印から **Install a third-party plugin** を選んでも、同じダイアログが開きます。
+2. **Package name or address** に、このフォークの GitHub の URL を入れます。
+
+   ```
+   https://github.com/kiojuvr/dsh-computer-use-win
    ```
 
-2. もう一度トレイアイコンを右クリックし、**終了** を選んでから DSH Desktop を開き直します。ウィンドウを閉じただけでは、DSH はトレイに残ったままで新しいプラグインを読み込みません。
-3. **設定 → コンピューター操作**（マウスのアイコン）を開き、項目を確認します。既定のままで使えます。その後、[6 章](#6-停止と表示)や[9 章](#9-よくある質問)を参考にタスクを依頼してください。
+   入力欄で Enter を押すか、**Install** を押すとインストールが始まります。
+3. **Restart DSH to apply the change** と表示されたら、トレイアイコンを右クリックして **終了** を選び、DSH Desktop を開き直します。ウィンドウを閉じただけでは、DSH はトレイに残ったままで新しいプラグインを読み込みません。
+4. **設定 → コンピューター操作**（マウスのアイコン）を開き、項目を確認します。既定のままで使えます。その後、[6 章](#6-停止と表示)や[9 章](#9-よくある質問)を参考にタスクを依頼してください。
+
+インストール先は、DSH Desktop が使っているプロファイルです。ほかのプロファイルに入れた場合、いま使っている DSH には反映されません。
+
+> **コンソールがある環境（DSH Web など）では**、これまでどおりコマンドでも入れられます: `dsh plugin --profile desktop add github:kiojuvr/dsh-computer-use-win`
 
 > npm の `dsh-computer-use-win`（`dsh plugin --profile desktop add dsh-computer-use-win`）は上流のパッケージで、日本語ローカライズは含まれません。日本語 UI を使うには、上の GitHub からのインストールを使ってください。
 
 #### 1.3 アップグレード
 
-同じインストールコマンドを実行し、上記の 2 と同じように **完全に終了してから** 開き直します。
-
-コマンド内の `desktop` は DSH Desktop が使うプロファイル名です。別のプロファイルに入れた場合、いま使っている DSH には反映されません。
+**Plugins → Add plugin** で同じ GitHub の URL を入れ直し、上の 3 と同じように **完全に終了してから** 開き直します。コマンドで入れた場合は、同じインストールコマンドを実行します（`desktop` は DSH Desktop が使うプロファイル名です）。
 
 #### 1.4 その他のインストール方法
 
